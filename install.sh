@@ -17,12 +17,12 @@ fi
 
 # 2. Atualizar pacotes
 echo "[+] Atualizando pacotes..."
-apt-get update -y
-apt-get upgrade -y
+apt update -y
+apt upgrade -y
 
 # 3. Instalar o CUPS e dependências essenciais
 echo "[+] Instalando o CUPS..."
-apt-get install -y cups cups-pdf curl sudo git
+apt install -y cups curl sudo git
 
 # Configurar o CUPS para aceitar conexões remotas
 echo "[+] Configurando o CUPS..."
@@ -34,7 +34,7 @@ if ! command -v node &> /dev/null
 then
     echo "[+] Node.js não encontrado. Instalando versão 20.x..."
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt-get install -y nodejs
+    apt install -y nodejs
 else
     echo "[+] Node.js já está instalado!"
 fi
