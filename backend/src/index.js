@@ -87,7 +87,9 @@ app.put('/api/auth/change-password', authMiddleware, async (req, res) => {
     }
 });
 
-// Impressoras (Printers)
+// Impressoras (Printers) - CRUD Completo
+
+// Listar todas
 app.get('/api/printers', authMiddleware, (req, res) => {
     db.all(`SELECT * FROM printers ORDER BY name ASC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -95,12 +97,58 @@ app.get('/api/printers', authMiddleware, (req, res) => {
     });
 });
 
+// Criar nova
 app.post('/api/printers', authMiddleware, (req, res) => {
     const { name, location, price_per_copy } = req.body;
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'O nome da impressora é obrigatório.' });
+    }
     db.run(`INSERT INTO printers (name, location, price_per_copy) VALUES (?, ?, ?)`, 
-        [name, location, price_per_copy], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: this.lastID, name, location, price_per_copy });
+        [name.trim(), location || '', price_per_copy || 0], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE')) {
+                    return res.status(400).json({ error: 'Já existe uma impressora com este nome.' });
+                }
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ id: this.lastID, name: name.trim(), location, price_per_copy });
+    });
+});
+
+// Atualizar impressora
+app.put('/api/printers/:id', authMiddleware, (req, res) => {
+    const { name, location, price_per_copy } = req.body;
+    const { id } = req.params;
+
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'O nome da impressora é obrigatório.' });
+    }
+
+    db.run(`UPDATE printers SET name = ?, location = ?, price_per_copy = ? WHERE id = ?`,
+        [name.trim(), location || '', price_per_copy || 0, id], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE')) {
+                    return res.status(400).json({ error: 'Já existe uma impressora com este nome.' });
+                }
+                return res.status(500).json({ error: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Impressora não encontrada.' });
+            }
+            res.json({ id: Number(id), name: name.trim(), location, price_per_copy });
+    });
+});
+
+// Excluir impressora
+app.delete('/api/printers/:id', authMiddleware, (req, res) => {
+    const { id } = req.params;
+
+    db.run(`DELETE FROM printers WHERE id = ?`, [id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Impressora não encontrada.' });
+        }
+        res.json({ message: 'Impressora excluída com sucesso.' });
     });
 });
 
@@ -142,19 +190,40 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
     });
 });
 
-// Relatórios
+// Relatórios (com filtros de data e impressora)
 app.get('/api/reports', authMiddleware, (req, res) => {
+    const { start, end, printer_id } = req.query;
+
     let query = `
         SELECT pj.id, pj.printed_at as date, pj.username as user, p.name as printer, 
                pj.pages, pj.copies, pj.total_cost as total 
         FROM print_jobs pj
         JOIN printers p ON pj.printer_id = p.id
-        ORDER BY pj.printed_at DESC
-        LIMIT 100
     `;
-    // Filtros de data e printer_id poderiam ser adicionados aqui pegando rec.query
 
-    db.all(query, [], (err, rows) => {
+    const conditions = [];
+    const params = [];
+
+    if (start) {
+        conditions.push(`pj.printed_at >= ?`);
+        params.push(start);
+    }
+    if (end) {
+        conditions.push(`pj.printed_at <= ? || ' 23:59:59'`);
+        params.push(end);
+    }
+    if (printer_id) {
+        conditions.push(`pj.printer_id = ?`);
+        params.push(printer_id);
+    }
+
+    if (conditions.length > 0) {
+        query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY pj.printed_at DESC LIMIT 500`;
+
+    db.all(query, params, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });

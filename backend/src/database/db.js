@@ -40,10 +40,6 @@ const initDB = () => {
 
         // Insert admin user with hashed '123alterar' and flag to requires change
         db.run(`INSERT OR IGNORE INTO users (username, password_hash, requires_password_change) VALUES ('admin', '$argon2id$v=19$m=65536,t=3,p=4$/hbJr9ucPINl9uO9i+LW+g$JGhAylnmzk9MkzoY9j8PRCxDgjBD4fkYQIHMsPVBDAs', 1)`);
-        
-        // Insert some default printers for testing purposes
-        db.run(`INSERT OR IGNORE INTO printers (name, location, price_per_copy) VALUES ('HP_LaserJet_400', 'RH - 2º Andar', 0.15)`);
-        db.run(`INSERT OR IGNORE INTO printers (name, location, price_per_copy) VALUES ('Brother_MFC', 'Financeiro', 0.10)`);
     });
 };
 

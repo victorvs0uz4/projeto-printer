@@ -1,7 +1,15 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Printer, FileText, LogOut } from 'lucide-react';
 
 const MainLayout = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('requiresPasswordChange');
+    navigate('/login');
+  };
+
   return (
     <div className="app-container">
       <nav className="sidebar">
@@ -37,7 +45,7 @@ const MainLayout = () => {
         </div>
 
         <div style={{ padding: '1.5rem 1rem', borderTop: '1px solid var(--glass-border)' }}>
-          <button className="btn-secondary" style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--error)' }}>
+          <button className="btn-secondary" style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--error)' }} onClick={handleLogout}>
             <LogOut size={20} /> Sair
           </button>
         </div>
