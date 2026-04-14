@@ -99,33 +99,42 @@ app.get('/api/printers', authMiddleware, (req, res) => {
 
 // Criar nova
 app.post('/api/printers', authMiddleware, (req, res) => {
-    const { name, location, price_per_copy } = req.body;
+    const { name, description, ip_address, device_type, manufacturer, model, is_a3, is_color, show_in_widget, cost_a3_bw, cost_a3_color, cost_a4_bw, cost_a4_color } = req.body;
     if (!name || !name.trim()) {
-        return res.status(400).json({ error: 'O nome da impressora é obrigatório.' });
+        return res.status(400).json({ error: 'O nome da fila virtual é obrigatório.' });
     }
-    db.run(`INSERT INTO printers (name, location, price_per_copy) VALUES (?, ?, ?)`, 
-        [name.trim(), location || '', price_per_copy || 0], function(err) {
+    
+    db.run(`INSERT INTO printers (name, description, ip_address, device_type, manufacturer, model, is_a3, is_color, show_in_widget, cost_a3_bw, cost_a3_color, cost_a4_bw, cost_a4_color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+        [
+            name.trim(), description || '', ip_address || '', device_type || '', manufacturer || '', model || '', 
+            is_a3 ? 1 : 0, is_color ? 1 : 0, show_in_widget !== undefined ? (show_in_widget ? 1 : 0) : 1, 
+            cost_a3_bw || 0, cost_a3_color || 0, cost_a4_bw || 0, cost_a4_color || 0
+        ], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE')) {
                     return res.status(400).json({ error: 'Já existe uma impressora com este nome.' });
                 }
                 return res.status(500).json({ error: err.message });
             }
-            res.json({ id: this.lastID, name: name.trim(), location, price_per_copy });
+            res.json({ id: this.lastID, name: name.trim() });
     });
 });
 
 // Atualizar impressora
 app.put('/api/printers/:id', authMiddleware, (req, res) => {
-    const { name, location, price_per_copy } = req.body;
+    const { name, description, ip_address, device_type, manufacturer, model, is_a3, is_color, show_in_widget, cost_a3_bw, cost_a3_color, cost_a4_bw, cost_a4_color } = req.body;
     const { id } = req.params;
 
     if (!name || !name.trim()) {
-        return res.status(400).json({ error: 'O nome da impressora é obrigatório.' });
+        return res.status(400).json({ error: 'O nome da fila virtual é obrigatório.' });
     }
 
-    db.run(`UPDATE printers SET name = ?, location = ?, price_per_copy = ? WHERE id = ?`,
-        [name.trim(), location || '', price_per_copy || 0, id], function(err) {
+    db.run(`UPDATE printers SET name = ?, description = ?, ip_address = ?, device_type = ?, manufacturer = ?, model = ?, is_a3 = ?, is_color = ?, show_in_widget = ?, cost_a3_bw = ?, cost_a3_color = ?, cost_a4_bw = ?, cost_a4_color = ? WHERE id = ?`,
+        [
+            name.trim(), description || '', ip_address || '', device_type || '', manufacturer || '', model || '', 
+            is_a3 ? 1 : 0, is_color ? 1 : 0, show_in_widget !== undefined ? (show_in_widget ? 1 : 0) : 1, 
+            cost_a3_bw || 0, cost_a3_color || 0, cost_a4_bw || 0, cost_a4_color || 0, id
+        ], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE')) {
                     return res.status(400).json({ error: 'Já existe uma impressora com este nome.' });
@@ -135,7 +144,7 @@ app.put('/api/printers/:id', authMiddleware, (req, res) => {
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Impressora não encontrada.' });
             }
-            res.json({ id: Number(id), name: name.trim(), location, price_per_copy });
+            res.json({ id: Number(id), name: name.trim() });
     });
 });
 

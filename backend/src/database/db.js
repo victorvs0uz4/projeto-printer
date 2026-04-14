@@ -20,8 +20,18 @@ const initDB = () => {
         db.run(`CREATE TABLE IF NOT EXISTS printers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE NOT NULL,
-            location TEXT,
-            price_per_copy REAL NOT NULL DEFAULT 0.00,
+            description TEXT,
+            ip_address TEXT,
+            device_type TEXT,
+            manufacturer TEXT,
+            model TEXT,
+            is_a3 BOOLEAN DEFAULT 0,
+            is_color BOOLEAN DEFAULT 0,
+            show_in_widget BOOLEAN DEFAULT 1,
+            cost_a3_bw REAL DEFAULT 0.00,
+            cost_a3_color REAL DEFAULT 0.00,
+            cost_a4_bw REAL DEFAULT 0.00,
+            cost_a4_color REAL DEFAULT 0.00,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
