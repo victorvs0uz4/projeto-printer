@@ -234,7 +234,8 @@ app.get('/api/reports', authMiddleware, (req, res) => {
 const frontendPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendPath));
 
-app.use((req, res) => {
+// Apenas GET serve o SPA - PUT/DELETE/POST para rotas inexistentes retornam 404
+app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
