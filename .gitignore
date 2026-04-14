@@ -1,0 +1,23 @@
+# Dependências
+node_modules/
+
+# Banco de dados (criado automaticamente)
+*.sqlite
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build do frontend (gerado no deploy)
+frontend/dist/
+
+# Ambiente
+.env
+.env.local
+
+# Editor
+.vscode/
+.idea/
+*.sw?
+.DS_Store
